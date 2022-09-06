@@ -1,18 +1,18 @@
+const { updateMany } = require("../models/authorModel");
 const authorModel= require("../models/authorModel")
 const blogModel = require("../models/blogModel")
-// var ObjectId = require('mongodb').ObjectID
+const ObjectId = require('mongodb').ObjectId
+const moment = require("moment")
 
-// Blogs post api
+//==================================== Blogs post api ===============================//
 
 const  createBlog = async function(req, res){
     try{
         let data = req.body;
         let objectid = data.authorId;
         let newData = await authorModel.findById(objectid)
-        // res.send(newData)
-        if(!newData){
-            res.status(400).send({status: flase, msg: "Invalid author Id"})
-        }else{
+        if(!newData) res.status(400).send({status: flase, msg: "Invalid author Id"})
+        else{
             let savedData= await blogModel.create(data)
             res.status(201).send({status: true, data: savedData})
         }
@@ -23,23 +23,88 @@ const  createBlog = async function(req, res){
 }
 
 
-// find blogs data by query params
+//===================================== find blogs data by query params =======================//
 
 const findQuery = async function(req, res){
     try{
         let data = req.query
+        data["isDeleted:"] = false;
+        data["isPublished"] = true;
         const newData = await blogModel.find(data)
-        if(!newData){
-            res.status(400).send({status: false, msg: "Data not find"})
-        }else {
+        if(newData.length <1) res.status(404).send({status: false, msg: "Data not found"})
+        else{
             res.status(200).send({status: true, data: newData})
         }
     }catch(error){
         res.status(500).send({status: false, msg: error.message})
     }
+}
+
+
+//============================== PUT /blogs/:blogId ================================//
+
+const blogUpdate = async function(req, res){
+    try{
+        let data = req.params.blogId;
+        let savedData = req.body;
+        let blogId = await blogModel.findById(ObjectId(data)).find({isDeleted: false})
+        if(blogId.length < 1) res.status(404).send({status: false, msg: "Invalid data."})
+        else{
+            let data1 = blogId[0]._id
+            let time = moment().format("YYYY-MM-DD T HH:MM:SS.SSS Z");
+            savedData["publishedAt"] = time;
+            savedData["isPublished"] = true;
+            let newData = await blogModel.findOneAndUpdate({_id: data1},savedData,{ new: true })
+            res.status(200).send({status: true, data: newData})
+        }
+    }catch(err){
+        res.status(500).send({status: false, msg: err.message})
+    }
 
 }
 
+//============================ DELETE /blogs/:blogId (params)=================================//
+
+const deleteByblogId = async function(req, res){
+    try{
+        let data = req.params.blogId;
+        let blogId = await blogModel.findById(ObjectId(data)).find({isDeleted: false});
+        if(blogId.length < 1){
+            res.status(404).send({status: false, msg: "Invalid data."})
+        }else{
+            let data1 = blogId[0]._id
+            let time = moment().format("YYYY-MM-DD T HH:MM:SS.SSS Z");
+            let newData = await blogModel.findOneAndUpdate( {_id: data1}, {$set: {isDeleted: true, deletedAt: time}},{ new: true })
+            res.status(200).send({status: true, data: newData})
+        }
+    }catch(error){
+        res.status(500).send({status: false, msg: error.message})
+    }
+}
+
+
+//============================ DELETE /blogs/:blogId (Query)=================================//
+
+const deleteByQuery = async function(req, res){
+    try{
+        let data = req.query
+        data["isDeleted"] = false; // input key and value in data object.
+        data["isPublished"] = true; // input key and value in data object.
+        const newData = await blogModel.find(data) // find any data exist in this object.
+        if(newData.length <1) res.status(404).send({status: false, msg: "Data not found"}) //If don't have any data in newData then send message.
+        else{
+            let time = moment().format("YYYY-MM-DD T HH:MM:SS.SSS Z"); // set live time using moment module.
+            let newData = await blogModel.updateMany( data, {$set: {isDeleted: true, deletedAt: time}},{ new: true })
+            res.status(200).send({status: true, data: newData})
+        }
+    }catch(error){
+        res.status(500).send({status: false, msg: error.message})
+    }
+}
+
+
 module.exports.createBlog = createBlog
 module.exports.findQuery = findQuery
-
+module.exports.blogUpdate = blogUpdate
+module.exports.deleteByblogId  = deleteByblogId 
+module.exports.deleteByQuery = deleteByQuery

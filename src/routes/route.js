@@ -10,11 +10,16 @@ router.get("/test-me", function (req, res) {
 })
 
 
-router.post("/authors", AuthorController.createAuthor  )//mild.mild1,
+router.post("/authors",mild.mild1, AuthorController.createAuthor  )//mild.mild1,
 
-router.post("/blogs",mild.mild1, blogController.createBlog )
+router.post("/blogs", blogController.createBlog )
+
 router.get("/blogs", blogController.findQuery)
 
+router.put("/blogs/:blogId", blogController.blogUpdate)
 
+router.delete("/blogs/:blogId", blogController.deleteByblogId)
+
+router.delete("/blogs", blogController.deleteByQuery)
 
 module.exports = router;

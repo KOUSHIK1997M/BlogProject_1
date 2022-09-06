@@ -36,13 +36,21 @@ const blogSchema = new mongoose.Schema({
         required: true,
         // enum: [technology-[web development, mobile development, AI, ML etc]]
     },
+    isPublished: {
+        type: Boolean, 
+        default: false
+    },
+    publishedAt:{
+        type: String,
+        default: ''
+    },
     isDeleted: {
         type: Boolean, 
         default: false 
     },
-    isPublished: {
-        type: Boolean, 
-        default: false
+    deletedAt: {
+        type: String,
+        default: ''
     }
 
 }, { timestamps: true })
