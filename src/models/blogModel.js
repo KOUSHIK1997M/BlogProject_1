@@ -24,7 +24,8 @@ const blogSchema = new mongoose.Schema({
         type: [],
         items: {
           type: String
-        }
+        },
+        required: true
     },
     category: {
         type: String,

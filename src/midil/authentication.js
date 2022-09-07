@@ -6,13 +6,14 @@ const {  author } = require("../controllers/authorController");
 
 const authentication = async function (req, res, next){
     try{
-        let headers = req.headers["authorization"];
+        let headers = req.headers["x-api-key"];
         // res.send(headers)
-        const token = headers.split(" ")[1];
+        const token = headers.split(" ")[0];
+        // res.send(token)
         if(!token){
             res.status(404).send({status: false, msg: "No token found."})
         }
-        jwt.verify(String(token), "functionup-plutonium-very-very-secret-key",(err, author)=>{
+        jwt.verify(String(token), process.env.TOKEN ,(err, author)=>{
             if(err){
                 res.status(400).send({status: false, msg: "Invalid Token"})
             }else{
@@ -22,7 +23,7 @@ const authentication = async function (req, res, next){
             }
         })
     }catch(error){
-        res.status(500).send({status: true, msg: error.message})
+        res.status(500).send({status: false, msg: error.message})
     }
 }
 
