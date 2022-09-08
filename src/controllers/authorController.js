@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const emailValidator = require('deep-email-validator');
+const validator = require("email-validator");
 const authorModel = require("../models/authorModel")
 const jwt = require("jsonwebtoken");
 const bcrypt = require('bcryptjs');
@@ -17,14 +17,20 @@ const createAuthor = async function (req, res) {
         if (!(data.fname && data.lname && data.title && data.email && data.password)) {
             res.status(400).send({ status: false, msg: "please Enter all data." })
         } else {
-            let EmailId = await authorModel.findOne({ email: email })
-            if (EmailId) res.status(404).send({ status: false, msg: "Email Id alredy exist.." })
-            else {
-                const hashedPassword = await bcrypt.hash(pass, 10)
-                data["password"] = hashedPassword;
-                let savedData = await authorModel.create(data)
-                res.status(201).send({ status: true, data: savedData })
+            let emailId = validator.validate(email);
+            if (emailId == true) {
+                let EmailId = await authorModel.findOne({ email: email })
+                if (EmailId) res.status(409).send({ status: false, msg: "Email Id alredy exist.." })
+                else {
+                    const hashedPassword = await bcrypt.hash(pass, 10)
+                    data["password"] = hashedPassword;
+                    let savedData = await authorModel.create(data)
+                    res.status(201).send({ status: true, data: savedData })
+                }
+            }else{
+                res.status(400).send({ status: false, msg: "Invalid Email Id."})
             }
+
         }
     } catch (error) {
         res.status(500).send({ status: false, msgs: error.message })
@@ -32,7 +38,6 @@ const createAuthor = async function (req, res) {
 }
 
 //=========================(Author Login)================================//
-
 
 const authorLogin = async function (req, res) {
     try {
@@ -46,7 +51,7 @@ const authorLogin = async function (req, res) {
             } else {
                 let password = await bcrypt.compare(Password, value[0].password)
                 if (!password) {
-                    return next(CustomErrorHandler.wrongCredential())
+                    res.status(403).send({ status: false, msg: "Permission denide." })
                 } else {
                     let token = jwt.sign({ authorId: value[0]._id.toString(), email: value[0].email, password: value[0].password, }, process.env.TOKEN, { expiresIn: "1hr" });
                     res.setHeader("x-api-key", token);
