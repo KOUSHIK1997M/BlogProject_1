@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const AuthorController=require("../controllers/authorController")
-const BlogController=require("../controllers/blogController")
-// const CowinController= require("../controllers/cowinController")
-// const WeatherController=require("../controllers/weather Controller")
-// const memesController=require("../controllers/mems controller")
+const AuthorController = require("../controllers/authorController")
+const BlogController = require("../controllers/blogController")
+const middleWare = require("../middleWare/authentication")
+const user = require("../controllers/userController")
+
+
+
 
 
 
@@ -13,17 +15,23 @@ router.get("/test-me", function (req, res) {
 
 })
 
-router.post("/authors",AuthorController.createAuthor)
+router.get("/user", user.user)
 
-router.post("/blogs",BlogController.createBlog)
 
-router.get("/blogs",BlogController.findByQuery)
 
-router.put("/blogs/:blogId",BlogController.updateBlog)
+router.post("/authors", AuthorController.createAuthor)
 
-router.delete("/blogs/:blogId",BlogController.deleteBlog )
+router.post("/blogs", middleWare.authentication,middleWare.authourizationByBody,BlogController.createBlog)  //middleWare.authentication
 
-router.delete("/blogs",BlogController.deleteByQuery)
+router.get("/blogs", BlogController.findByQuery)
+
+router.put("/blogs/:blogId", middleWare.authentication, middleWare.authourizationByParams, BlogController.updateBlog)
+
+router.delete("/blogs/:blogId",  middleWare.authentication, middleWare.authourizationByParams, BlogController.deleteBlogById)
+
+router.delete("/blogs", middleWare.authentication, middleWare.authourizationByQuery, BlogController.deleteByQuery)
+
+router.post("/login", AuthorController.authorLogin)
 
 
 
