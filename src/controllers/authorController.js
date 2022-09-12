@@ -3,6 +3,7 @@ const router = express.Router();
 const validator = require("email-validator");
 const authorModel = require("../models/authorModel")
 const jwt = require("jsonwebtoken");
+
 const bcrypt = require('bcryptjs');
 
 
@@ -17,20 +18,23 @@ const createAuthor = async function (req, res) {
         if (!(data.fname && data.lname && data.title && data.email && data.password)) {
             res.status(400).send({ status: false, msg: "please Enter all data." })
         } else {
-            let emailId = validator.validate(email);
-            if (emailId == true) {
-                let EmailId = await authorModel.findOne({ email: email })
-                if (EmailId) res.status(409).send({ status: false, msg: "Email Id alredy exist.." })
-                else {
-                    const hashedPassword = await bcrypt.hash(pass, 10)
-                    data["password"] = hashedPassword;
-                    let savedData = await authorModel.create(data)
-                    res.status(201).send({ status: true, data: savedData })
+            try {
+                let emailId = validator.validate(email);
+                if (emailId == true) {
+                    let EmailId = await authorModel.findOne({ email: email })
+                    if (EmailId) res.status(409).send({ status: false, msg: "Email Id alredy exist.." })
+                    else {
+                        const hashedPassword = await bcrypt.hash(pass, 10)
+                        data["password"] = hashedPassword;
+                        let savedData = await authorModel.create(data)
+                        res.status(201).send({ status: true, data: savedData })
+                    }
+                } else {
+                    res.status(400).send({ status: false, msg: "Invalid Email Id." })
                 }
-            }else{
-                res.status(400).send({ status: false, msg: "Invalid Email Id."})
+            } catch (error) {
+                res.status(400).send({ status: false, msg: error.message })
             }
-
         }
     } catch (error) {
         res.status(500).send({ status: false, msgs: error.message })
