@@ -23,7 +23,7 @@ router.post("/authors", AuthorController.createAuthor)
 
 router.post("/blogs", middleWare.authentication,middleWare.authourizationByBody,BlogController.createBlog)  //middleWare.authentication
 
-router.get("/blogs", BlogController.findByQuery)
+router.get("/blogs", middleWare.authentication, middleWare.authourizationByQuery, BlogController.findByQuery)
 
 router.put("/blogs/:blogId", middleWare.authentication, middleWare.authourizationByParams, BlogController.updateBlog)
 

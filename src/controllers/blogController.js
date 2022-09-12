@@ -1,4 +1,4 @@
-const { updateMany } = require("../models/authorModel");
+// const { updateMany } = require("../models/authorModel");
 const authorModel = require("../models/authorModel")
 const blogModel = require("../models/blogModel")
 const ObjectId = require('mongodb').ObjectId
@@ -24,7 +24,7 @@ const findByQuery = async function (req, res) {
     try {
         let data = req.query
         data["isDeleted"] = false;
-        data["isPublished"] = true;
+        // data["isPublished"] = true;
         const newData = await blogModel.find(data)
         if (newData.length < 1) res.status(404).send({ status: false, msg: "Data not found" })
         else res.status(200).send({ status: true, data: newData })
@@ -39,6 +39,7 @@ const findByQuery = async function (req, res) {
 const updateBlog = async function (req, res) {
     try {
         let data = req.let
+        // res.send(typeof(data))
         let savedData = req.body;
         let data1 = data[0]._id
         let time = moment().format("YYYY-MM-DD T HH:MM:SS.SSS Z");

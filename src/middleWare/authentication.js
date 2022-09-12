@@ -47,7 +47,7 @@ const authourizationByBody = async function (req, res, next) {
         let Id = req.Id;
         let data = req.body;
         if (!(data.title && data.body && data.authorId && data.tags && data.category && data.subcategory)) {
-            res.status(400).send({ status: false, msg: "please Enter all data." })
+            res.status(400).send({ status: false, msg: "please Enter requred data." })
         } else {
             if (data.authorId == Id) {
                 req.let = data
